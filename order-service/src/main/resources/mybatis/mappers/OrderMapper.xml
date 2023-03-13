@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.orderservice.mapper.OrderMapper">
+
+    <insert id="save" parameterType="com.example.orderservice.entity.OrderEntity">
+        INSERT INTO `batch-1-order-service-db`.order_table
+            (order_id, order_date, username, amount, transaction_id)
+        VALUES (#{orderEntity.orderId},
+                #{orderEntity.orderDate},
+                #{orderEntity.username},
+                #{orderEntity.amount},
+                #{orderEntity.transactionId})
+    </insert>
+    <select id="getOrderByOrderId" resultType="com.example.orderservice.entity.OrderEntity">
+        SELECT *
+        FROM `batch-1-order-service-db`.order_table
+        WHERE order_id = ${orderId}
+    </select>
+</mapper>
