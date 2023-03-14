@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-@Table("order_table")
+@Table("order_payment_table")
 public class OrderPaymentEntity {
     @Id
     private Long paymentId;

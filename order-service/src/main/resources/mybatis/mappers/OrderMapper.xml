@@ -11,9 +11,14 @@
                 #{orderEntity.amount},
                 #{orderEntity.transactionId})
     </insert>
+    <update id="updateTransactionData">
+        UPDATE `batch-1-order-service-db`.order_table
+        SET order_table.transaction_id = #{transactionId}
+        WHERE order_table.order_id = #{orderId}
+    </update>
     <select id="getOrderByOrderId" resultType="com.example.orderservice.entity.OrderEntity">
         SELECT *
         FROM `batch-1-order-service-db`.order_table
-        WHERE order_id = ${orderId}
+        WHERE order_id = #{orderId}
     </select>
 </mapper>

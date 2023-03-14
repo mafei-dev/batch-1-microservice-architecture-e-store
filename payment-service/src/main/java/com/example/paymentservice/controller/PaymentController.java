@@ -21,7 +21,6 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-
     @PostMapping
     public Mono<ResponseEntity<MakePaymentResponseModal>> makePayment(
             @RequestBody MakePaymentRequestModal modal

@@ -4,14 +4,14 @@
 
     <insert id="save" parameterType="com.example.orderservice.entity.OrderStatusEntity">
         INSERT INTO `batch-1-order-service-db`.order_status (order_status_id, update_date, status, order_id)
-        VALUES (${orderStatusEntity.orderStatusId},
-                ${orderStatusEntity.updateDate},
-                ${orderStatusEntity.status},
-                ${orderStatusEntity.orderId})
+        VALUES (#{orderStatusEntity.orderStatusId},
+                #{orderStatusEntity.updateDate},
+                #{orderStatusEntity.status},
+                #{orderStatusEntity.orderId})
     </insert>
     <select id="getStatus" resultType="com.example.orderservice.entity.OrderStatusEntity">
         SELECT *
         FROM `batch-1-order-service-db`.order_status
-        WHERE order_id = ${orderId}
+        WHERE order_id = #{orderId}
     </select>
 </mapper>
