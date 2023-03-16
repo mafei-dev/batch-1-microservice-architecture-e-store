@@ -31,7 +31,7 @@ public class OrderService {
     private final PaymentService paymentService;
 
 
-//    @Transactional
+    @Transactional
     public PlaceOrderResponseDto makeOrder(PlaceOrderRequestDto requestDto) {
         UserDetailModal userDetailModal;
         LocalDateTime now = LocalDateTime.now();
