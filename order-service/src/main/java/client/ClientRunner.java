@@ -6,7 +6,7 @@ import org.springframework.web.client.RestTemplate;
 
 public class ClientRunner {
     public static void main(String[] args) {
-        for (int i = 0; i < 22; i++) {
+        for (int i = 0; i < 20; i++) {
             int finalI = i;
             new Thread(() -> ClientRunner.callTheRest(finalI)).start();
         }
@@ -16,7 +16,7 @@ public class ClientRunner {
 
     public static void callTheRest(int i) {
         try {
-            Object forObject = new RestTemplate().getForObject("http://localhost:8083/bulkhead/" + i, Object.class);
+            Object forObject = new RestTemplate().getForObject("http://localhost:8083/bulkhead/THREADPOOL/" + i, Object.class);
             System.out.println("response:" + forObject);
         } catch (RestClientException e) {
             System.err.println(e.getMessage());

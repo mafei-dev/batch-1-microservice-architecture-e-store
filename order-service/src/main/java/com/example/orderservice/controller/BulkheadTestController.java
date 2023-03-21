@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/bulkhead")
@@ -25,4 +27,11 @@ public class BulkheadTestController {
                 this.paymentService.getPayment(paymentId)
         );
     }
+
+    @GetMapping("/THREADPOOL/{paymentId}")
+    public CompletableFuture<String> testBHTHREADPOOL(@PathVariable String paymentId) {
+        System.out.println("BulkheadTestController:testBHTHREADPOOL:Thread:" + Thread.currentThread().getName());
+        return this.paymentService.getPaymentTHREADPOOL(paymentId);
+    }
+
 }

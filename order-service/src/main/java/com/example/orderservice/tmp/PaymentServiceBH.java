@@ -1,11 +1,10 @@
 package com.example.orderservice.tmp;
 
-import com.example.orderservice.utl.FallbackMethod;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @AllArgsConstructor
@@ -18,6 +17,15 @@ public class PaymentServiceBH {
         Sleep.sleepMe(2_000);
         return paymentId;
     }
+
+    @Bulkhead(name = "getPaymentTHREADPOOL", type = Bulkhead.Type.THREADPOOL)
+    public CompletableFuture<String> getPaymentTHREADPOOL(String paymentId) {
+        System.out.println("PaymentServiceBH:getPaymentTHREADPOOL:Thread:" + Thread.currentThread().getName() + ",paymentId:" + paymentId);
+        Sleep.sleepMe(2_000);
+        return CompletableFuture.completedFuture(paymentId);
+    }
+
+
 
    /* @FallbackMethod
     public String getPaymentFallback(String paymentId, Exception exception) {
