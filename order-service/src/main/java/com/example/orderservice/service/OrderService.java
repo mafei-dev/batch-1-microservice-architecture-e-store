@@ -5,6 +5,8 @@ import com.example.orderservice.dto.PlaceOrderRequestDto;
 import com.example.orderservice.dto.PlaceOrderResponseDto;
 import com.example.orderservice.entity.OrderEntity;
 import com.example.orderservice.entity.OrderStatusEntity;
+import com.example.orderservice.exception.OtherBadStatusException;
+import com.example.orderservice.exception.ServerUnavailableException;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.mapper.OrderStatusMapper;
 import com.example.orderservice.modal.GetPaymentDetailResponseModal;
@@ -143,18 +145,12 @@ public class OrderService {
 
                     } catch (FeignException e) {
                         e.printStackTrace();
-                        /*if (e.status() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
+                        if (e.status() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
                             System.err.println("HttpStatus.SERVICE_UNAVAILABLE");
-                            //fallback
-                            orderDetailViewResponseDto.getServiceStatus()
-                                    .putIfAbsent("order_service", "success");
-                            orderDetailViewResponseDto.getServiceStatus()
-                                    .putIfAbsent("payment_service", "failed");
-                            return orderDetailViewResponseDto;
+                            throw new ServerUnavailableException("Payment SERVICE_UNAVAILABLE");
                         } else {
-                            throw new RuntimeException("payment fetching error.");
-                        }*/
-                        throw e;
+                            throw new OtherBadStatusException(e);
+                        }
                     }
                 })
                 .orElseThrow(() -> new RuntimeException("Order not found."));
