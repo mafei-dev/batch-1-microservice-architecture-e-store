@@ -9,6 +9,7 @@ import com.example.paymentservice.modal.MakePaymentResponseModal;
 import com.example.paymentservice.service.PaymentService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -44,7 +45,13 @@ public class PaymentController {
 
 
     @GetMapping("/{payment_id}")
-    public Mono<ResponseEntity<GetPaymentDetailRequestModalModal>> getPaymentDetail(@PathVariable("payment_id") String paymentId) {
+    public Mono<ResponseEntity<GetPaymentDetailRequestModalModal>> getPaymentDetail(@PathVariable("payment_id") String paymentId) throws InterruptedException {
+        if (true){
+            Thread.sleep(2_000);
+            return Mono.just("a")
+                    .map(s -> ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
+        }
+
         return this.paymentService
                 .getPaymentDetail(
                         PaymentDetailRequestDto.builder()

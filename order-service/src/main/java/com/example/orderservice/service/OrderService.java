@@ -1,16 +1,20 @@
 package com.example.orderservice.service;
 
+import com.example.orderservice.dto.OrderDetailViewResponseDto;
 import com.example.orderservice.dto.PlaceOrderRequestDto;
 import com.example.orderservice.dto.PlaceOrderResponseDto;
 import com.example.orderservice.entity.OrderEntity;
 import com.example.orderservice.entity.OrderStatusEntity;
 import com.example.orderservice.mapper.OrderMapper;
 import com.example.orderservice.mapper.OrderStatusMapper;
+import com.example.orderservice.modal.GetPaymentDetailResponseModal;
 import com.example.orderservice.modal.MakePaymentRequestModal;
 import com.example.orderservice.modal.MakePaymentResponseModal;
 import com.example.orderservice.modal.UserDetailModal;
 import com.example.orderservice.service.external.PaymentService;
 import com.example.orderservice.service.external.UserService;
+import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -98,5 +102,67 @@ public class OrderService {
                 .builder()
                 .orderId(orderId)
                 .build();
+    }
+
+    @CircuitBreaker(name = "getPaymentDetail", fallbackMethod = "getPaymentDetailFallback")
+    public Object getOrderById(String orderId) {
+        return this.orderMapper
+                .getOrderByOrderId(orderId)
+                .map(orderEntity -> OrderDetailViewResponseDto
+                        //order-service
+                        .builder()
+                        .orderId(orderEntity.getOrderId())
+                        .orderDate(orderEntity.getOrderDate())
+                        .username(orderEntity.getUsername())
+                        .amount(orderEntity.getAmount())
+                        .transactionId(orderEntity.getTransactionId())
+                )
+                .map(orderDetailViewResponseDtoBuilder -> {
+                            //order-service
+                            OrderStatusEntity status = this.orderStatusMapper
+                                    .getStatus(orderId);
+                            return orderDetailViewResponseDtoBuilder
+                                    .orderStatusId(status.getOrderStatusId())
+                                    .updateDate(status.getUpdateDate())
+                                    .status(status.getStatus())
+                                    .build();
+                        }
+
+                )
+                .map(orderDetailViewResponseDto -> {
+                    //payment-service
+                    try {
+                        GetPaymentDetailResponseModal paymentDetail = this.paymentService
+                                .getPaymentDetail(orderDetailViewResponseDto.getTransactionId());
+                        orderDetailViewResponseDto.setPaymentDetail(paymentDetail);
+                        orderDetailViewResponseDto.getServiceStatus()
+                                .putIfAbsent("order_service", "success");
+                        orderDetailViewResponseDto.getServiceStatus()
+                                .putIfAbsent("payment_service", "success");
+                        return orderDetailViewResponseDto;
+
+                    } catch (FeignException e) {
+                        e.printStackTrace();
+                        /*if (e.status() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
+                            System.err.println("HttpStatus.SERVICE_UNAVAILABLE");
+                            //fallback
+                            orderDetailViewResponseDto.getServiceStatus()
+                                    .putIfAbsent("order_service", "success");
+                            orderDetailViewResponseDto.getServiceStatus()
+                                    .putIfAbsent("payment_service", "failed");
+                            return orderDetailViewResponseDto;
+                        } else {
+                            throw new RuntimeException("payment fetching error.");
+                        }*/
+                        throw e;
+                    }
+                })
+                .orElseThrow(() -> new RuntimeException("Order not found."));
+    }
+
+    public Object getPaymentDetailFallback(String paymentId, Exception exception) throws Exception {
+        System.err.println("exception = " + exception.getMessage());
+        System.out.println("PaymentService.getPaymentDetailFallback");
+        throw exception;
     }
 }

@@ -11,6 +11,6 @@ public interface OrderStatusMapper {
 
     void save(@Param("orderStatusEntity") OrderStatusEntity orderStatusEntity);
 
-    List<OrderStatusEntity> getStatus(String orderId);
+    OrderStatusEntity getStatus(String orderId);
 
 }
