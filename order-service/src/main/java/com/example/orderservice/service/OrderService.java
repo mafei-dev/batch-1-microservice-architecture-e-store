@@ -15,6 +15,7 @@ import com.example.orderservice.modal.MakePaymentResponseModal;
 import com.example.orderservice.modal.UserDetailModal;
 import com.example.orderservice.service.external.PaymentService;
 import com.example.orderservice.service.external.UserService;
+import com.example.orderservice.service.external.cb.PaymentServiceImpl;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final OrderStatusMapper orderStatusMapper;
     private final UserService userService;
-    private final PaymentService paymentService;
+    private final PaymentServiceImpl paymentService;
 
 
     @Transactional
@@ -106,7 +107,7 @@ public class OrderService {
                 .build();
     }
 
-    @CircuitBreaker(name = "getPaymentDetail", fallbackMethod = "getPaymentDetailFallback")
+
     public Object getOrderById(String orderId) {
         return this.orderMapper
                 .getOrderByOrderId(orderId)
@@ -133,25 +134,14 @@ public class OrderService {
                 )
                 .map(orderDetailViewResponseDto -> {
                     //payment-service
-                    try {
-                        GetPaymentDetailResponseModal paymentDetail = this.paymentService
-                                .getPaymentDetail(orderDetailViewResponseDto.getTransactionId());
-                        orderDetailViewResponseDto.setPaymentDetail(paymentDetail);
-                        orderDetailViewResponseDto.getServiceStatus()
-                                .putIfAbsent("order_service", "success");
-                        orderDetailViewResponseDto.getServiceStatus()
-                                .putIfAbsent("payment_service", "success");
-                        return orderDetailViewResponseDto;
-
-                    } catch (FeignException e) {
-                        e.printStackTrace();
-                        if (e.status() == HttpStatus.SERVICE_UNAVAILABLE.value()) {
-                            System.err.println("HttpStatus.SERVICE_UNAVAILABLE");
-                            throw new ServerUnavailableException("Payment SERVICE_UNAVAILABLE");
-                        } else {
-                            throw new OtherBadStatusException(e);
-                        }
-                    }
+                    GetPaymentDetailResponseModal paymentDetail = this.paymentService
+                            .getPaymentDetail(orderDetailViewResponseDto.getTransactionId());
+                    orderDetailViewResponseDto.setPaymentDetail(paymentDetail);
+                    orderDetailViewResponseDto.getServiceStatus()
+                            .putIfAbsent("order_service", "success");
+                    orderDetailViewResponseDto.getServiceStatus()
+                            .putIfAbsent("payment_service", "success");
+                    return orderDetailViewResponseDto;
                 })
                 .orElseThrow(() -> new RuntimeException("Order not found."));
     }

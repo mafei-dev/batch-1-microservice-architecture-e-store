@@ -49,7 +49,7 @@ public class PaymentController {
         if (true){
             Thread.sleep(2_000);
             return Mono.just("a")
-                    .map(s -> ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build());
+                    .map(s -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
         }
 
         return this.paymentService
