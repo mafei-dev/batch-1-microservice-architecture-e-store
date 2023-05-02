@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  e-store-eureka-service:
+    container_name: e-store-eureka-service
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    networks:
+      - e-store
+  e-store-api-gateway:
+    container_name: e-store-api-gateway
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      - e-store-eureka-service
+    networks:
+      - e-store
+  e-store-user-service:
+    container_name: e-store-user-service
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    networks:
+      - e-store
+    depends_on:
+      - e-store-eureka-service
+networks:
+  e-store:
+    external: true
+    internal: true
